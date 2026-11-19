@@ -141,15 +141,25 @@
 
 ### macOS 提示“无法验证开发者”或“应用已损坏”
 
-当前发布包默认未签名、未公证：
+当前发布包默认未签名、未公证（新构建会自动做 ad-hoc 签名，以减少“已损坏”提示）。
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/Local Video Lab.app"
+# 移除隔离属性
+sudo xattr -rd com.apple.quarantine "/Applications/Local Video Lab.app"
+
+# 如果仍提示“已损坏”，对应用做 ad-hoc 修复签名
+sudo codesign --force --deep --sign - "/Applications/Local Video Lab.app"
 ```
 
 或在 Finder 中右键应用 → 打开。
 
-如果你自行构建并希望彻底消除提示，请参考 [BUILD.md](BUILD.md) 的签名与公证章节。
+如果仍无法打开，请确认：
+
+- 应用已拖入 `/Applications`，不是从 DMG 或下载目录直接运行；
+- 下载的是对应架构（Apple Silicon 用 arm64，Intel 用 x64）；
+- DMG / zip 下载完整（可重新下载）。
+
+彻底消除提示需要 Apple Developer ID + 公证，见 [BUILD.md](BUILD.md) 第 8 节。
 
 ### Windows 提示“Windows 已保护你的电脑”
 

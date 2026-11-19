@@ -109,13 +109,17 @@
 
 ### macOS 首次打开
 
-当前发布包默认**未签名、未公证**。首次打开可能提示“无法验证开发者”或“应用已损坏”。任选一种方式：
+当前发布包默认**未签名、未公证**（构建时会自动做 ad-hoc 签名，降低出现“已损坏”的概率）。首次打开仍可能提示“无法验证开发者”；任选一种方式：任选一种方式：
 
 1. 在 Finder 中右键应用 → **打开** → 再次确认打开。
 2. 或在终端执行：
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/Local Video Lab.app"
+# 旧版本或被 Gatekeeper 标记时，先移除隔离属性
+sudo xattr -rd com.apple.quarantine "/Applications/Local Video Lab.app"
+
+# 如果仍提示“已损坏”，修复签名（不会上传或修改其他文件）
+sudo codesign --force --deep --sign - "/Applications/Local Video Lab.app"
 ```
 
 ### Windows 首次打开

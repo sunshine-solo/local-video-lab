@@ -486,11 +486,14 @@ ffprobe-win32-x64.exe
 
 ### macOS 提示“应用已损坏”
 
-未签名 + 隔离属性导致。执行：
+未公证 + 隔离属性，或应用 bundle 没有有效签名导致。新构建会在 `afterPack` 中对未签名包执行 ad-hoc 签名，可减少“已损坏”提示；旧版本或仍被拦截时执行：
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/Local Video Lab.app"
+sudo xattr -rd com.apple.quarantine "/Applications/Local Video Lab.app"
+sudo codesign --force --deep --sign - "/Applications/Local Video Lab.app"
 ```
+
+彻底消除首次打开提示仍需 Developer ID 签名 + 公证。
 
 ### Windows SmartScreen 拦截
 
