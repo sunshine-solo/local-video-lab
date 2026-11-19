@@ -15,6 +15,8 @@ import {
   ShieldCheck,
   ArrowRight,
   SlidersHorizontal,
+  Download,
+  ExternalLink,
 } from '@lucide/vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { useEngine, engineReady } from '@/composables/useEngine'
@@ -33,6 +35,37 @@ const initialized = ref(false)
 const testing = ref(false)
 const savingPaths = ref(false)
 const clearingTemp = ref(false)
+const updateState = reactive({
+  checking: false,
+  checked: false,
+  result: null,
+  error: '',
+})
+
+const updateAvailable = computed(() => Boolean(updateState.result?.hasUpdate))
+const updateDownloadUrl = computed(() => (
+  updateState.result?.downloadUrl || updateState.result?.releaseUrl || ''
+))
+
+async function checkUpdates() {
+  if (updateState.checking) return
+  updateState.checking = true
+  updateState.error = ''
+  updateState.result = null
+  try {
+    const result = await window.api.checkForUpdates()
+    if (result?.ok) {
+      updateState.result = result
+    } else {
+      updateState.error = result?.error || '检查更新失败'
+    }
+  } catch (error) {
+    updateState.error = error?.message || '检查更新失败'
+  } finally {
+    updateState.checking = false
+    updateState.checked = true
+  }
+}
 
 watch(
   () => [settings.loaded, settings.ffmpegPath, settings.ffprobePath],
@@ -351,6 +384,68 @@ async function clearTemp() {
       </div>
     </section>
 
+    <section class="card update-card">
+      <div class="card-title">
+        <h3>软件更新</h3>
+        <span class="hint">当前版本 v{{ appInfo.version || '—' }}</span>
+      </div>
+
+      <div class="update-row">
+        <div class="preference-copy">
+          <b>检查 GitHub Releases</b>
+          <span>仅在你点击按钮时访问 GitHub，不会后台上传视频或收集使用数据。</span>
+        </div>
+        <button class="btn btn-secondary btn-sm" type="button" :disabled="updateState.checking" @click="checkUpdates">
+          <LoaderCircle v-if="updateState.checking" :size="14" class="spin" />
+          <RefreshCw v-else :size="14" />
+          {{ updateState.checking ? '检查中…' : '检查更新' }}
+        </button>
+      </div>
+
+      <div v-if="updateState.error" class="update-message error">
+        <CircleAlert :size="15" />
+        <span>{{ updateState.error }}</span>
+      </div>
+
+      <div v-else-if="updateState.result" class="update-message" :class="{ success: !updateAvailable }">
+        <template v-if="updateAvailable">
+          <div class="update-version">
+            <b>发现新版本 v{{ updateState.result.latestVersion }}</b>
+            <span>当前版本 v{{ updateState.result.currentVersion }}</span>
+          </div>
+          <div class="update-actions">
+            <a
+              class="btn btn-primary btn-sm"
+              :href="updateDownloadUrl"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Download :size="14" />
+              下载更新
+            </a>
+            <a
+              class="btn btn-ghost btn-sm"
+              :href="updateState.result.releaseUrl"
+              target="_blank"
+              rel="noreferrer"
+            >
+              发布说明
+              <ExternalLink :size="12" />
+            </a>
+          </div>
+        </template>
+        <template v-else-if="updateState.result.noRelease">
+          <Check :size="15" />
+          <span>仓库还没有发布版本。</span>
+          <a :href="updateState.result.releaseUrl" target="_blank" rel="noreferrer">查看 Releases</a>
+        </template>
+        <template v-else>
+          <Check :size="15" />
+          <span>已是最新版本 v{{ updateState.result.currentVersion }}</span>
+        </template>
+      </div>
+    </section>
+
     <RouterLink to="/about" class="card about-link">
       <div class="about-copy">
         <span class="about-kicker">OPEN SOURCE · GPL-3.0</span>
@@ -631,6 +726,74 @@ async function clearTemp() {
 .theme-check {
   margin-left: auto;
   color: var(--accent);
+}
+
+.update-card {
+  padding: 20px 22px;
+}
+
+.update-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.update-message {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 11.5px;
+}
+
+.update-message svg {
+  flex: 0 0 auto;
+}
+
+.update-message.error {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.update-message.success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.update-message a {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.update-version {
+  flex: 1;
+  min-width: 0;
+}
+
+.update-version b {
+  display: block;
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.update-version span {
+  display: block;
+  margin-top: 1px;
+  color: var(--text-3);
+  font-size: 10.5px;
+}
+
+.update-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
 }
 
 .about-link {

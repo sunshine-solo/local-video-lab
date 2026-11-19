@@ -36,7 +36,7 @@ The browser version used FFmpeg WebAssembly, which is single-threaded, memory-co
 ### Desktop & Privacy
 - Native FFmpeg child process, progress parsed from `-progress pipe:1`, cancellable.
 - Atomic output: a failed or cancelled job never destroys an existing file.
-- Fully offline: no telemetry, no upload endpoints, no remote content.
+- Offline by default: no telemetry, no upload endpoints, no remote content. The app contacts the GitHub Releases API only when you click “Check for updates”.
 - Sandboxed renderer + context isolation + whitelist `media://` protocol.
 - Light / dark / system theme.
 
@@ -71,7 +71,7 @@ On Windows, choose **More info → Run anyway** if SmartScreen appears.
 Requirements: Node.js ≥ 22.12, npm ≥ 10.
 
 ```bash
-git clone https://github.com/your-name/local-video-lab.git
+git clone https://github.com/sunshine-solo/local-video-lab.git
 cd local-video-lab
 npm install
 npm run dev
@@ -124,6 +124,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design, filter gra
 ## Documentation
 
 - [Usage guide (Chinese)](docs/USAGE.md)
+- [Versioning & releases (Chinese)](docs/RELEASING.md)
 - [Build & release (Chinese)](docs/BUILD.md)
 - [Architecture (Chinese)](docs/ARCHITECTURE.md)
 - [FAQ (Chinese)](docs/FAQ.md)

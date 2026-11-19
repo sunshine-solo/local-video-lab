@@ -11,7 +11,7 @@
 - 推荐 VS Code + Vue 官方插件
 
 ```bash
-git clone https://github.com/your-name/local-video-lab.git
+git clone https://github.com/sunshine-solo/local-video-lab.git
 cd local-video-lab
 npm install
 npm run dev

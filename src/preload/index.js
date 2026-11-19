@@ -64,6 +64,7 @@ const api = {
   saveSettings: (patch) => ipcRenderer.invoke('settings:save', patch),
   getEngineInfo: (force = false) => ipcRenderer.invoke('engine:info', { force }),
   testBinaries: (paths) => ipcRenderer.invoke('engine:test', paths),
+  checkForUpdates: () => ipcRenderer.invoke('update:check'),
   clearTemp: () => ipcRenderer.invoke('app:clear-temp'),
   getAppInfo: () => ipcRenderer.invoke('app:info'),
   setTheme: (theme) => ipcRenderer.invoke('theme:set', theme),

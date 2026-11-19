@@ -46,21 +46,28 @@ jobs:
         include:
           - os: macos-15-intel
             target: mac-x64
+            arch: x64
             command: npm run dist:mac:x64
             artifacts: |
               release/*.dmg
               release/*.zip
           - os: macos-15
             target: mac-arm64
+            arch: arm64
             command: npm run dist:mac:arm64
             artifacts: |
               release/*.dmg
               release/*.zip
           - os: windows-latest
             target: win-x64
+            arch: x64
             command: npm run dist:win
             artifacts: |
               release/*.exe
+
+    env:
+      MAC_CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+      WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
 
     steps:
       - uses: actions/checkout@v4
@@ -73,7 +80,26 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build installer
+      - name: Build installer (macOS signed + notarized)
+        if: runner.os == 'macOS' && env.MAC_CSC_LINK != ''
+        env:
+          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+          CSC_NAME: ${{ secrets.MAC_CSC_NAME }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: npm run build && npx electron-builder --mac --${{ matrix.arch }} --config electron-builder.signed.yml
+
+      - name: Build installer (macOS unsigned)
+        if: runner.os == 'macOS' && env.MAC_CSC_LINK == ''
+        run: ${{ matrix.command }}
+
+      - name: Build installer (Windows)
+        if: runner.os == 'Windows'
+        env:
+          CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
         run: ${{ matrix.command }}
 
       - name: List artifacts
@@ -95,6 +121,16 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify tag matches package.json version
+        run: |
+          node -e "const p=require('./package.json'); const tag=(process.env.GITHUB_REF_NAME||'').replace(/^v/,''); if (p.version !== tag) { console.error('Tag ' + process.env.GITHUB_REF_NAME + ' does not match package.json version ' + p.version); process.exit(1) }"
+
       - uses: actions/download-artifact@v4
         with:
           path: artifacts

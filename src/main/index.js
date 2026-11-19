@@ -11,9 +11,8 @@ const { getEngineInfo, testBinaries } = require('./engineInfo')
 const { probeMedia } = require('./ffmpeg/probe')
 const { resolveBinaries, ensureExecutable } = require('./ffmpeg/binaries')
 const { cleanupStaleTempDirs, clearJobTempDirs } = require('./tempCleanup')
-
-const APP_DISPLAY_NAME = '文艺文视频工坊'
-const REPO_URL = 'https://github.com/your-name/local-video-lab'
+const { checkForUpdates } = require('./updateChecker')
+const { APP_DISPLAY_NAME, REPO_URL } = require('./constants')
 
 const VIDEO_EXTENSIONS = [
   'mp4', 'm4v', 'mov', 'webm', 'mkv', 'avi', 'flv', 'wmv',
@@ -281,6 +280,17 @@ function registerIpc() {
       return await testBinaries(payload || {})
     } catch (error) {
       return { ok: false, error: error.message || '测试失败' }
+    }
+  })
+
+  ipcMain.handle('update:check', async () => {
+    try {
+      return await checkForUpdates({
+        currentVersion: app.getVersion(),
+        repoUrl: REPO_URL,
+      })
+    } catch (error) {
+      return { ok: false, currentVersion: app.getVersion(), error: error.message || '检查更新失败' }
     }
   })
 

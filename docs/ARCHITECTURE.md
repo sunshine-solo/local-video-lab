@@ -31,6 +31,9 @@
 │  mediaProtocol.js   media:// + Range + CORS                                  │
 │  settings.js        userData/settings.json                                  │
 │  engineInfo.js      版本、硬件编码器、设置页测试                               │
+│  updateChecker.js   手动检查 GitHub Releases（可选联网）                       │
+│  version.js         语义化版本解析与比较（纯函数）                              │
+│  constants.js       应用显示名、仓库地址                                       │
 └──────────────────────────────────────────────────────────────────────────────┘
                  │
                  ▼
@@ -64,7 +67,7 @@ webPreferences: {
 - 渲染层 CSP 限制脚本、媒体、连接来源；生产环境通过 `file://` 加载相对资源。
 - `setWindowOpenHandler` 只允许 http(s) 链接交给系统浏览器；`will-navigate` 阻止站内跳转。
 - `media://` 协议只放行音视频扩展名，避免变成任意文件读取接口。
-- 不包含网络请求、遥测或上传逻辑。
+- 不包含后台上传、遥测或远程内容加载；唯一的网络请求是用户手动触发的 GitHub Releases 更新检查。
 
 ### IPC 通道
 
@@ -79,6 +82,7 @@ webPreferences: {
 | `job:progress` | event | 进度、阶段、说明 |
 | `settings:get` / `settings:save` | invoke | 读写本机设置 |
 | `engine:info` / `engine:test` | invoke | 引擎状态与路径测试 |
+| `update:check` | invoke | 手动查询 GitHub 最新 Release，比较版本 |
 | `app:info` / `app:clear-temp` | invoke | 版本信息、清理临时目录 |
 | `shell:reveal` / `shell:open` | invoke | 在文件夹中显示 / 打开文件 |
 | `theme:set` | invoke | 同步原生标题栏主题 |

@@ -63,7 +63,8 @@
 - **硬件编码**：启动时用真实小视频逐项检测编码器是否真的可用，失败自动回退 `libx264`；可在设置中关闭。
 - **原子输出**：先写隐藏临时文件，成功后才替换目标文件。取消或失败不会破坏你原有的同名文件。
 - **可取消**：取消会终止 FFmpeg 子进程并清理中间文件。
-- **完全离线**：没有账号、云端队列、上传接口或遥测。
+- **默认离线**：没有账号、云端队列、上传接口或遥测；只有手动点击“检查更新”时才会访问 GitHub Releases API。
+- **手动检查更新**：设置页比较当前版本与 GitHub 最新 Release，显示下载入口；不自动下载、不后台轮询。
 
 ---
 
@@ -140,7 +141,7 @@ xattr -dr com.apple.quarantine "/Applications/Local Video Lab.app"
 ### 安装与开发
 
 ```bash
-git clone https://github.com/your-name/local-video-lab.git
+git clone https://github.com/sunshine-solo/local-video-lab.git
 cd local-video-lab
 
 npm install
@@ -225,7 +226,7 @@ npm run dist:win
 ## 测试
 
 ```bash
-npm test            # 28 个纯函数单元测试
+npm test            # 33 个纯函数单元测试
 npm run test:smoke  # 真实 FFmpeg：无损拼接、标准化拼接、模糊/马赛克/纯色
 npm run test:e2e    # Electron 生产构建 + media:// + canvas + preload API
 npm run test:ui     # 真实 UI 流程：自动添加素材、框选区域、点击处理并校验输出
@@ -292,7 +293,7 @@ local-video-lab/
 ## 隐私与安全
 
 - **不上传**：项目没有任何上传接口、云端服务或遥测代码。
-- **不联网**：应用运行时不发起网络请求，网络断开时全部功能可用。
+- **默认不联网**：除手动“检查更新”外，应用不发起网络请求；断网时全部视频处理功能仍可用。
 - **最小权限**：`sandbox: true` + `contextIsolation: true`，渲染层只能调用 preload 暴露的白名单方法。
 - **文件访问受限**：`media://` 协议只允许常见音视频扩展名；不支持任意文件读取。
 - **直接打开外部链接**：README 与界面中的链接通过系统浏览器打开，不在应用内加载远程页面。
@@ -336,7 +337,8 @@ FFmpeg 以其自身许可证（GPL/LGPL，取决于构建）分发。完整第�
 ## 文档
 
 - [使用指南](docs/USAGE.md) — 两个工具的完整操作说明与参数解释
-- [构建与发布](docs/BUILD.md) — 本地打包、签名、CI、发版、替换 FFmpeg
+- [版本号与发布](docs/RELEASING.md) — 版本号、tag、GitHub Actions 发版流程
+- [构建与发布](docs/BUILD.md) — 本地打包、签名、公证、CI、替换 FFmpeg
 - [架构说明](docs/ARCHITECTURE.md) — 进程模型、IPC、滤镜图、任务与协议
 - [常见问题](docs/FAQ.md)
 - [贡献指南](CONTRIBUTING.md)
@@ -366,4 +368,4 @@ npm run dev
 - [Lucide](https://lucide.dev/) — 界面图标
 - [electron-builder](https://www.electron.build/) — 跨平台安装包
 
-本项目的最初版本移植自 [cuntuweb-v2](https://github.com/your-name/cuntuweb-v2) 的浏览器版视频去水印与拼接模块，并针对原生 FFmpeg 重新设计。
+本项目的最初版本移植自 [cuntuweb-v2](https://gitee.com/ShangHaiArya/cuntuweb-v2) 的浏览器版视频去水印与拼接模块，并针对原生 FFmpeg 重新设计。

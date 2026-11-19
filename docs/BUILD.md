@@ -252,62 +252,97 @@ git push origin v1.0.0
 
 发布前逐项确认：
 
-- [ ] 替换所有占位仓库地址：
-  ```bash
-  grep -rn "your-name" . --exclude-dir=node_modules --exclude-dir=out --exclude-dir=release
-  ```
-  需要修改的位置：
-  - `package.json` → `repository` / `bugs` / `homepage`
-  - `src/main/index.js` → `REPO_URL`
-  - `README.md` 的 clone 地址与致谢链接
-- [ ] 修改 `electron-builder.yml` 的 `appId`（如 `com.yourcompany.localvideolab`）。
-- [ ] 修改 `package.json` 的 `version` 与 `CHANGELOG.md`。
+- [ ] 仓库地址已正确配置为 `sunshine-solo/local-video-lab`（`package.json`、`src/main/constants.js`、README）。
+- [ ] 如需更换 `appId`，修改 `electron-builder.yml`。
+- [ ] 修改 `package.json` 的 `version` 与 `CHANGELOG.md`（详见 [RELEASING.md](RELEASING.md)）。
 - [ ] 更新应用名称 / 图标（见下文）。
 - [ ] `npm test`、`npm run test:smoke`、`npm run test:e2e`、`npm run test:ui` 全部通过。
 - [ ] 在目标平台实际安装并运行 `--self-test`。
 - [ ] 用真实素材各跑一次去水印与拼接，确认输出可播放、体积合理。
+- [ ] 如需消除 Gatekeeper / SmartScreen 提示，已配置签名与公证（见第 8 节）。
 - [ ] 检查 `THIRD_PARTY_NOTICES.md` 是否仍然准确。
-- [ ] 打标签并推送，等待 CI 生成 Release。
+- [ ] 推送 tag，等待 CI 生成 Release。
 
 ---
 
-## 8. 代码签名与公证（可选）
+## 8. 代码签名与公证
 
-未签名包可以正常开源分发，但用户体验较差。生产分发建议签名。
+### 先说结论
+
+**没有受信任的证书，就无法让 macOS Gatekeeper 或 Windows SmartScreen 完全不提示。** 自签名证书、ad-hoc 签名、改文件名都不能解决“其他用户下载后首次打开”的信任问题。
+
+要做到“安装后直接打开、不出现警告”，需要：
+
+| 平台 | 需要什么 | 大致成本 |
+| --- | --- | --- |
+| macOS | Apple Developer Program + Developer ID Application 证书 + 公证 | US$99/年 |
+| Windows | 受信任的代码签名证书（OV 或 EV） | 约 US$200–500/年，EV 更快建立 SmartScreen 信誉 |
+
+没有证书时，用户可以右键打开（macOS）或“更多信息 → 仍要运行”（Windows），或者执行 `xattr` 命令；这些已写在 README。
+
+项目已经准备好签名/公证的构建配置，**拿到证书后只需配置 GitHub Secrets，不需要改代码**。
+
+---
 
 ### 8.1 macOS 签名 + 公证
 
-1. 准备 Apple Developer ID Application 证书（`.p12`）。
-2. 修改 `electron-builder.yml`：
+#### 准备
 
-```yaml
-mac:
-  hardenedRuntime: true          # 公证要求
-  gatekeeperAssess: false
-  # identity: null               # 删除这一行，或写明证书名称
-  notarize:
-    teamId: YOUR_TEAM_ID
-```
+1. 加入 [Apple Developer Program](https://developer.apple.com/programs/)。
+2. 在 Apple Developer 后台创建 **Developer ID Application** 证书，导出为 `.p12`。
+3. 在 [appleid.apple.com](https://appleid.apple.com/) 生成 **App 专用密码**。
+4. 记下 Team ID（Apple Developer 后台右上角）。
 
-3. 设置环境变量：
+#### 本地构建
 
 ```bash
-export CSC_LINK=/absolute/path/to/certificate.p12
-export CSC_KEY_PASSWORD='certificate-password'
+export CSC_LINK=/absolute/path/to/DeveloperID.p12
+export CSC_KEY_PASSWORD='p12-password'
+export CSC_NAME='Developer ID Application: Your Name (TEAMID)'
 export APPLE_ID='you@example.com'
 export APPLE_APP_SPECIFIC_PASSWORD='app-specific-password'
-export APPLE_TEAM_ID='YOUR_TEAM_ID'
+export APPLE_TEAM_ID='TEAMID'
+
+npm run build
+npx electron-builder --mac --arm64 --config electron-builder.signed.yml
+npx electron-builder --mac --x64   --config electron-builder.signed.yml
 ```
 
-4. 重新执行 `npm run dist:mac:arm64` / `dist:mac:x64`。
+`electron-builder.signed.yml` 继承默认配置，并启用：
 
-electron-builder 会使用 `notarytool` 提交公证，并自动 stapling。公证需要联网，首次可能需要几分钟。
+- `hardenedRuntime: true`
+- `entitlements` / `entitlementsInherit`
+- `notarize: true`（需同时设置 `APPLE_ID`、`APPLE_APP_SPECIFIC_PASSWORD`、`APPLE_TEAM_ID`）
+- 使用 `CSC_NAME` 指定的证书
 
-> 注意：`beforePack` 添加的 FFmpeg 可执行文件会被 electron-builder 一并签名；如果公证失败，优先检查 `resources/bin` 下的二进制是否被正确签名。
+electron-builder 会先签名（包括 `resources/bin` 下的 FFmpeg/FFprobe），再通过 `notarytool` 提交公证并自动 stapling。`scripts/after-pack.cjs` 会在主应用签名前单独签名这两个二进制，避免公证因“包含未签名可执行文件”失败。首次公证通常需要几分钟。
+
+#### CI 构建
+
+在 GitHub 仓库 **Settings → Secrets and variables → Actions** 中添加：
+
+| Secret | 内容 |
+| --- | --- |
+| `MAC_CSC_LINK` | `.p12` 的 base64：`base64 -i cert.p12 \| pbcopy` |
+| `MAC_CSC_KEY_PASSWORD` | `.p12` 密码 |
+| `MAC_CSC_NAME` | 证书完整名称，例如 `Developer ID Application: Name (TEAMID)` |
+| `APPLE_ID` | Apple 账号邮箱 |
+| `APPLE_APP_SPECIFIC_PASSWORD` | App 专用密码 |
+| `APPLE_TEAM_ID` | Team ID |
+
+工作流检测到 `MAC_CSC_LINK` 后会自动使用签名配置；没有该 secret 时仍构建未签名包。
+
+> 不需要把证书提交到仓库。GitHub Actions 会把 secret 注入构建环境。
+
+---
 
 ### 8.2 Windows 签名
 
-准备代码签名证书（`.pfx`）并设置：
+#### 准备
+
+购买受信任的代码签名证书（推荐 EV；OV 需要时间积累 SmartScreen 信誉）。导出 `.pfx`。
+
+#### 本地构建
 
 ```powershell
 $env:CSC_LINK = "C:\path\certificate.pfx"
@@ -315,7 +350,30 @@ $env:CSC_KEY_PASSWORD = "password"
 npm run dist:win
 ```
 
-未签名的 NSIS 安装包会触发 SmartScreen 警告；签名 + 稳定的发布历史可以逐步建立信誉。
+electron-builder 会在打包过程中签名应用 exe、卸载器与安装器。**自签名证书不会消除 SmartScreen 警告**，必须是受信任 CA 签发的证书。
+
+#### CI 构建
+
+添加 GitHub Secrets：
+
+| Secret | 内容 |
+| --- | --- |
+| `WIN_CSC_LINK` | `.pfx` 的 base64 |
+| `WIN_CSC_KEY_PASSWORD` | `.pfx` 密码 |
+
+工作流的 Windows job 会自动注入 `CSC_LINK` / `CSC_KEY_PASSWORD`。没有 secret 时保持未签名。
+
+> EV 证书通常需要硬件令牌；GitHub Actions 无法直接使用硬件令牌。此时需要自建 Windows runner 或使用云签名服务（Azure Trusted Signing、SSL.com eSigner 等）。OV 证书的 `.pfx` 可以直接用于 CI。
+
+---
+
+### 8.3 没有证书时能做与不能做的事
+
+- ✅ 使用 `npm run dist:mac:*` / `dist:win` 生成可运行安装包。
+- ✅ 用户右键打开（macOS）或“仍要运行”（Windows）。
+- ✅ 通过 README 提供 `xattr` 命令。
+- ❌ 无法让 Gatekeeper / SmartScreen 对所有用户完全不提示。
+- ❌ ad-hoc 签名、自签名证书、重命名 `.exe` 都不能替代受信任证书。
 
 ---
 

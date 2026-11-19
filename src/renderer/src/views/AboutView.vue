@@ -117,7 +117,7 @@ const stack = [
           <span class="pill pill-accent"><Lock :size="12" /> 本地</span>
         </div>
         <ul class="check-list">
-          <li><Check :size="14" /> 不发起任何网络请求，也不收集遥测数据。</li>
+          <li><Check :size="14" /> 默认不联网，也不收集遥测数据；只有手动点击“检查更新”时才访问 GitHub API。</li>
           <li><Check :size="14" /> 不读取与任务无关的文件，不上传任何内容。</li>
           <li><Check :size="14" /> 转码中间文件写入系统临时目录，完成后自动删除。</li>
           <li><Check :size="14" /> 设置与输出目录偏好只保存在本机用户数据目录。</li>

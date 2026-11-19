@@ -34,6 +34,7 @@
   - 原子输出：失败或取消不破坏原有文件。
   - 单个任务管理、可取消、临时文件自动清理。
   - 设置页：自定义 FFmpeg 路径、硬件加速开关、临时文件清理、引擎自检。
+  - 手动检查更新：查询 GitHub Releases、语义化版本比较、平台安装包下载入口（不后台联网）。
 
 - **工程与发布**
   - electron-builder：macOS DMG/ZIP（arm64 / x64）、Windows NSIS（x64）。
@@ -41,3 +42,4 @@
   - GitHub Actions：测试、三平台构建、标签发布。
   - 单元测试、真实 FFmpeg 冒烟测试、Electron 端到端检查、自动截图。
   - 完整使用、构建、架构、FAQ 文档与第三方许可证说明。
+  - macOS 签名/公证与 Windows 签名的 CI 配置（提供证书 secrets 后自动启用）。

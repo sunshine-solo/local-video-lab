@@ -47,7 +47,7 @@ function registerIpc() {
   ipcMain.handle('app:info', () => ({
     name: '文艺文视频工坊',
     version: require('../package.json').version,
-    repoUrl: 'https://github.com/your-name/local-video-lab',
+    repoUrl: 'https://github.com/sunshine-solo/local-video-lab',
     license: 'GPL-3.0-or-later',
     platform: process.platform,
     arch: process.arch,
