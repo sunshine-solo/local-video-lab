@@ -37,11 +37,11 @@
     "test:ui": "npm run build && electron scripts/e2e-ui.cjs",
     "screenshots": "npm run build && electron scripts/screenshots.cjs",
     "icons": "node scripts/generate-icon.mjs",
-    "dist": "npm run build && electron-builder",
-    "dist:mac": "npm run build && electron-builder --mac",
-    "dist:mac:arm64": "npm run build && electron-builder --mac --arm64",
-    "dist:mac:x64": "npm run build && electron-builder --mac --x64",
-    "dist:win": "npm run build && electron-builder --win --x64"
+    "dist": "npm run build && electron-builder --publish never",
+    "dist:mac": "npm run build && electron-builder --mac --publish never",
+    "dist:mac:arm64": "npm run build && electron-builder --mac --arm64 --publish never",
+    "dist:mac:x64": "npm run build && electron-builder --mac --x64 --publish never",
+    "dist:win": "npm run build && electron-builder --win --x64 --publish never"
   },
   "devDependencies": {
     "@ffprobe-installer/ffprobe": "^2.1.2",
