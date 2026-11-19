@@ -1,0 +1,60 @@
+{
+  "name": "local-video-lab",
+  "productName": "Local Video Lab",
+  "version": "1.0.0",
+  "description": "基于原生 FFmpeg 的本地视频处理桌面工具：视频去水印、视频拼接。所有处理均在本机完成。",
+  "main": "./out/main/index.js",
+  "author": "Local Video Lab Contributors",
+  "license": "GPL-3.0-or-later",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-name/local-video-lab"
+  },
+  "bugs": {
+    "url": "https://github.com/your-name/local-video-lab/issues"
+  },
+  "homepage": "https://github.com/your-name/local-video-lab",
+  "keywords": [
+    "electron",
+    "ffmpeg",
+    "video",
+    "video-joiner",
+    "video-blur",
+    "local",
+    "privacy"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "test": "node --test tests",
+    "test:smoke": "node scripts/smoke-test.cjs",
+    "test:e2e": "npm run build && electron scripts/e2e-electron.cjs",
+    "test:ui": "npm run build && electron scripts/e2e-ui.cjs",
+    "screenshots": "npm run build && electron scripts/screenshots.cjs",
+    "icons": "node scripts/generate-icon.mjs",
+    "dist": "npm run build && electron-builder",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:mac:arm64": "npm run build && electron-builder --mac --arm64",
+    "dist:mac:x64": "npm run build && electron-builder --mac --x64",
+    "dist:win": "npm run build && electron-builder --win --x64"
+  },
+  "devDependencies": {
+    "@ffprobe-installer/ffprobe": "^2.1.2",
+    "@lucide/vue": "^1.76.0",
+    "@rollup/plugin-commonjs": "^29.0.3",
+    "@vitejs/plugin-vue": "^6.0.4",
+    "electron": "^45.4.1",
+    "electron-builder": "^26.18.0",
+    "electron-vite": "^6.0.0",
+    "ffmpeg-static": "^5.3.0",
+    "sharp": "^0.35.5",
+    "vite": "^7.3.1",
+    "vue": "^3.5.45",
+    "vue-router": "^4.6.4"
+  }
+}

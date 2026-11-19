@@ -1,0 +1,58 @@
+appId: com.localvideolab.app
+productName: Local Video Lab
+copyright: Copyright © 2026 Local Video Lab Contributors
+
+directories:
+  output: release
+  buildResources: build
+
+beforePack: scripts/before-pack.cjs
+
+extraResources:
+  - from: build/staged-bin
+    to: bin
+
+files:
+  - out/**/*
+  - package.json
+  - "!**/*.map"
+  - "!**/*.md"
+
+asar: true
+npmRebuild: false
+
+mac:
+  category: public.app-category.video
+  icon: build/icon.png
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  identity: null
+  target:
+    - target: dmg
+    - target: zip
+  artifactName: local-video-lab-${version}-mac-${arch}.${ext}
+
+dmg:
+  title: Local Video Lab ${version}
+  artifactName: local-video-lab-${version}-mac-${arch}.${ext}
+
+win:
+  icon: build/icon.png
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: local-video-lab-${version}-win-${arch}.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: 文艺文视频工坊
+  uninstallDisplayName: Local Video Lab (文艺文视频工坊)
+  deleteAppDataOnUninstall: false
+
+# 第一版聚焦 Windows 与 macOS；Linux 未作为正式目标验证。

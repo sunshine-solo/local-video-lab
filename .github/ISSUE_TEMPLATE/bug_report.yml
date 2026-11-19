@@ -1,0 +1,93 @@
+name: Bug report / 问题反馈
+description: 报告一个可复现的问题
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈！提交前请先搜索已有 Issue。
+        **请勿上传包含隐私内容的完整视频**，只需要提供 ffprobe 信息或剪短的测试片段。
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 发生了什么？涉及视频拼接还是视频去水印？
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 打开……
+        2. 选择……素材
+        3. 点击……
+        4. 观察到……
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期行为 vs 实际行为
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 应用版本
+      placeholder: "例如 1.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 平台
+      options:
+        - macOS Apple Silicon
+        - macOS Intel
+        - Windows x64
+        - Linux（开发模式）
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: 操作系统版本
+      placeholder: "例如 macOS 15.2 / Windows 11 23H2"
+    validations:
+      required: true
+
+  - type: textarea
+    id: engine
+    attributes:
+      label: 引擎状态
+      description: 设置页的 FFmpeg 版本、硬件编码器；或 `--self-test` 输出。
+      render: json
+
+  - type: textarea
+    id: media
+    attributes:
+      label: 素材信息（如适用）
+      description: 请提供 ffprobe 输出，而不是完整视频。
+      render: shell
+      placeholder: |
+        ffprobe -v error -print_format json -show_format -show_streams "input.mp4"
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 确认
+      options:
+        - label: 我已搜索过现有 Issue
+          required: true
+        - label: 我使用的是 Releases 中的最新版本
+          required: false
+        - label: 我确认没有上传包含隐私内容的完整视频
+          required: true
